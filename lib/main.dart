@@ -203,12 +203,15 @@ class GameState {
     return updateAfterAction(Position(newRow, newCol), null);
   }
 
-  GameState useElement(String element) {
-    final currentCell = grid[playerPos.row][playerPos.col];
-    if (currentCell is TileEnemy) {
-      return updateAfterAction(playerPos, element);
+  // 👇 использует элемент на указанной позиции (например, на враге)
+  GameState useElementAt(String element, Position targetPos) {
+    final cell = grid[targetPos.row][targetPos.col];
+
+    if (cell is TileEnemy) {
+      return updateAfterAction(targetPos, element); // 👈 Используем позицию врага!
     }
-    return this;
+
+    return this; // Не на враге — ничего не делаем
   }
 }
 
@@ -274,10 +277,12 @@ class _GameScreenState extends State<GameScreen> {
   void onTileTap(int row, int col) {
     if (state.gameOver) return;
 
-    final currentCell = state.grid[row][col];
+    // Если выбран элемент — попробуем использовать его на клетке, куда тапнули
     if (selectedElement != null) {
-      if (currentCell is TileEnemy) {
-        final result = state.useElement(selectedElement!);
+      final targetCell = state.grid[row][col];
+      if (targetCell is TileEnemy) {
+        final result = state.useElementAt(selectedElement!, Position(row, col));
+
         if (result == state) {
           showFeedback('Этот элемент не взаимодействует с врагом...');
         } else {
@@ -287,14 +292,17 @@ class _GameScreenState extends State<GameScreen> {
           });
         }
       }
-    } else {
-      final dr = row - state.playerPos.row;
-      final dc = col - state.playerPos.col;
-      if ((dr.abs() + dc.abs()) <= 1) {
-        setState(() {
-          state = state.move(dr, dc);
-        });
-      }
+      // Если тапнул не на врага — ничего не делаем
+      return;
+    }
+
+    // Обычное перемещение — только если не выбран элемент
+    final dr = row - state.playerPos.row;
+    final dc = col - state.playerPos.col;
+    if ((dr.abs() + dc.abs()) <= 1) {
+      setState(() {
+        state = state.move(dr, dc);
+      });
     }
   }
 
