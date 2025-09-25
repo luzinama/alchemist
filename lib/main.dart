@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:math';
+import 'mazeGenerator.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  //test maze generation
+  final maze = MazeGenerator(width: 40, height: 20, roomCount: 5);
+  maze.generate(enemyCount: 10);
+  maze.printMaze();
+
   runApp(const PixelAlchemistApp());
 }
 
